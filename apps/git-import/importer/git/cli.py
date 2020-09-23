@@ -10,7 +10,7 @@ def b2s(byte):
     return '' if not byte else byte.decode("utf-8")
 
 
-class Repo:
+class GitCli:
 
     def __init__(self, target):
         self.target = target
@@ -60,3 +60,17 @@ class Repo:
         os.chdir(workdir)
 
         return b2s(res.stdout).splitlines()
+
+    def show(self, commit_id, path):
+
+        os.chdir('repos/{}'.format(self.target['title']))
+
+        command = 'git show {}:{}'.format(commit_id, path)
+        res = subprocess.run(command, capture_output=True)
+
+        os.chdir(workdir)
+
+        if res.returncode == 0:
+            return b2s(res.stdout).splitlines()
+        else:
+            return ''
