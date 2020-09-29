@@ -7,7 +7,7 @@ repos = list(db.repos.find())
 def __store_commits(repo, commits):
 
     for commit in commits:
-        commit['repo'] = repo.target['_id']
+        commit['repo'] = repo['_id']
 
     db_commits.insert_many(commits)
 
@@ -16,22 +16,47 @@ def __store_changes(repo, changes):
 
     for change in changes:
 
-        db_files.update_one({
+        file = db_files.find_one({
             'path': change['old_path']
-        }, {
-            '$set': {
+        })
+
+        if file:
+            db_files.update_one({
+                '_id': file['_id']
+            }, {
+                '$set': {
+                    'path': change['path'],
+                    'repo': repo['_id']
+                },
+                '$push': {
+                    'changes': change
+                }
+            }, True)
+
+            file_id = file['_id']
+        else:
+            res = db_files.insert_one({
                 'path': change['path'],
-                'repo': repo.target['_id']
-            },
+                'repo': repo['_id'],
+                'changes': [change]
+            })
+
+            file_id = res.inserted_id
+
+        db_commits.update_one({
+            'commit_id': change['commit_id']
+        }, {
             '$push': {
-                'changes': change
+                'files': file_id
             }
-        }, True)
+        })
 
 
 def __calculate_metrics(repo):
 
-    content = repo.show(change['commit_id'], change['path'])
+    # for commit in db_commits.find({repo: repo['_id']}):
+
+    #     content = repo.show(change['commit_id'], change['path'])
 
     print('not implemented')
 
@@ -43,3 +68,5 @@ def go():
 
         __store_commits(repo, commits)
         __store_changes(repo, changes)
+
+        __calculate_metrics(repo)

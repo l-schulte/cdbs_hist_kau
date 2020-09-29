@@ -42,7 +42,7 @@ def __interpret_commit(lines):
             break
 
     return {
-        'cid': id,
+        'commit_id': id,
         'author': author,
         'email': email,
         'date': date,
