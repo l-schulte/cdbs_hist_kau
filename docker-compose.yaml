@@ -10,3 +10,7 @@ services:
       MONGO_INITDB_DATABASE: cdbs_v1
     ports:
       - 27017:27017
+
+  git-importer:
+    build: apps/git-import/
+    command: python app.py
