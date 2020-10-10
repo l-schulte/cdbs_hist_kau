@@ -1,4 +1,5 @@
 from importer.git import git
+from importer.cloc import cloc
 from importer import db, db_commits, db_files
 
 repos = list(db.repos.find())
@@ -54,11 +55,20 @@ def __store_changes(repo, changes):
 
 def __calculate_metrics(repo):
 
-    # for commit in db_commits.find({repo: repo['_id']}):
+    for file in db_files.find({'repo': repo['_id']}):
+        c_pos = 0
+        for change in file['changes']:
+            content = git.get_file_content(
+                repo, change['commit_id'], change['path'])
+            stat = cloc.analyze_file(file['path'], content)
 
-    #     content = repo.show(change['commit_id'], change['path'])
+            db_files.update_one({
+                '_id': file['_id']
+            }, {
+                '$set': {'changes.{}.cloc'.format(c_pos): stat}
+            })
 
-    print('not implemented')
+            c_pos += 1
 
 
 def go():

@@ -10,10 +10,17 @@ def crawl(target):
     db_log.insert_one({'text': 'Import for repo {}'.format(target['title']),
                        'time': datetime.datetime.now()})
 
-    repo = GitCli(target)
+    cli = GitCli(target)
 
-    repo.clone()
-    repo.pull()
+    cli.clone()
+    cli.pull()
 
-    log = repo.log()
+    log = cli.log()
     return interpreter.log(log)
+
+
+def get_file_content(target, commit_id, path):
+
+    cli = GitCli(target)
+
+    return cli.show(commit_id, path)

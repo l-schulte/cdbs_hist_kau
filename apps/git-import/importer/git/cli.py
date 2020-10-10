@@ -71,6 +71,6 @@ class GitCli:
         os.chdir(workdir)
 
         if res.returncode == 0:
-            return b2s(res.stdout).splitlines()
+            return b2s(res.stdout)
         else:
             return ''

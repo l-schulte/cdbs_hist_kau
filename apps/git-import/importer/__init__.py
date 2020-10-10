@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 
-client = MongoClient('mongodb://%s:%s@127.0.0.1' %
-                     ('root', 'localdontuseglobal'))
+client = MongoClient('mongodb://%s:%s@%s' %
+                     ('root', 'localdontuseglobal', 'localhost'))
 
 db = client.cdbs_db
 db_log = db.import_log
