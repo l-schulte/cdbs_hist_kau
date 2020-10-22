@@ -1,3 +1,4 @@
+from importer.sonarqube import sonarqube
 from importer.git import git
 from importer.cloc import cloc
 from importer import db, db_commits, db_files
@@ -27,10 +28,10 @@ def __store_changes(repo, changes):
             }, {
                 '$set': {
                     'path': change['path'],
-                    'repo': repo['_id']
-                },
-                '$push': {
-                    'changes': change
+                    'repo': repo['_id'],
+                    'changes': {
+                        change['commit_id']: change
+                    }
                 }
             }, True)
 
@@ -39,7 +40,9 @@ def __store_changes(repo, changes):
             res = db_files.insert_one({
                 'path': change['path'],
                 'repo': repo['_id'],
-                'changes': [change]
+                'changes': {
+                    change['commit_id']: change
+                }
             })
 
             file_id = res.inserted_id
@@ -56,8 +59,8 @@ def __store_changes(repo, changes):
 def __calculate_metrics(repo):
 
     for file in db_files.find({'repo': repo['_id']}):
-        c_pos = 0
-        for change in file['changes']:
+        for id in file['changes']:
+            change = file['changes'][id]
             content = git.get_file_content(
                 repo, change['commit_id'], change['path'])
             stat = cloc.analyze_file(file['path'], content)
@@ -65,18 +68,18 @@ def __calculate_metrics(repo):
             db_files.update_one({
                 '_id': file['_id']
             }, {
-                '$set': {'changes.{}.cloc'.format(c_pos): stat}
+                '$set': {'changes.{}.cloc'.format(id): stat}
             })
-
-            c_pos += 1
 
 
 def go():
-    for repo in repos:
+    # for repo in repos:
 
-        commits, changes = git.crawl(repo)
+    #     commits, changes = git.crawl(repo)
 
-        __store_commits(repo, commits)
-        __store_changes(repo, changes)
+    #     __store_commits(repo, commits)
+    #     __store_changes(repo, changes)
 
-        __calculate_metrics(repo)
+    #     __calculate_metrics(repo)
+
+    sonarqube.go()

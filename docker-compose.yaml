@@ -14,3 +14,11 @@ services:
   git-importer:
     build: apps/git-import/
     command: python app.py
+
+  sonar-qube:
+    image: sonarqube:8-community
+    restart: always
+
+  sonar-scanner:
+    image: sonarsource/sonar-scanner-cli:4
+    
