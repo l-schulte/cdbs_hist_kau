@@ -36,7 +36,6 @@ class SonarqubeCli:
             .format(project_key, sonarqube_instance, token)
 
         start_time = time.time()
-        print(start_time)
 
         res = subprocess.run(command)
 

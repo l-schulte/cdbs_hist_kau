@@ -1,12 +1,12 @@
 from datetime import datetime
-import json
 import time
+import math
 from time import sleep
 import requests
 from requests.models import HTTPBasicAuth
 import progressbar
 
-from importer.sonarqube import sonarqube_instance
+from importer.sonarqube import sonarqube_instance, metric_keys
 
 
 class SonarqubeApi:
@@ -21,23 +21,23 @@ class SonarqubeApi:
         res = requests.post(url, auth=self.auth)
 
         if res.ok:
-            self.token = json.loads(res.text)['token']
+            self.token = res.json()['token']
             return self.token
 
         res.raise_for_status()
 
-    def check_status(self, name, start_time):
+    def check_status(self, key, start_time):
 
         url_search = sonarqube_instance + '/api/projects/search'
 
-        for i in progressbar.progressbar(range(20)):
-            res_search = requests.get(url_search, {'projects': name}, auth=self.auth)
-            projects = json.loads(res_search.text)['components']
+        for _ in progressbar.progressbar(range(20)):
+            res_search = requests.get(url_search, {'projects': key}, auth=self.auth)
+            projects = res_search.json()['components']
 
             if len(projects) == 1:
                 time_string = projects[0]['lastAnalysisDate']
                 time_string = time_string[:-2] + ':' + time_string[-2:]
-                run_time = datetime.fromisoformat(time_string).timestamp
+                run_time = datetime.fromisoformat(time_string).timestamp()
                 print(run_time)
                 print(start_time)
 
@@ -48,25 +48,62 @@ class SonarqubeApi:
 
         return False
 
-    def get_project_key(self, name):
+    def get_analysis_result(self, key):
+
+        url = sonarqube_instance + '/api/measures/component_tree'
+
+        page = 0
+        pages = 1
+        page_size = 500
+
+        base_component = {}
+        components = []
+
+        while page < pages:
+
+            page += 1
+
+            parameters = {
+                'p': page,
+                'ps': page_size,
+                'component': key,
+                'metricKeys': metric_keys
+            }
+
+            res = requests.get(url, parameters)
+            res.raise_for_status()
+
+            body = res.json()
+
+            pages = math.ceil(body['paging']['total'] / page_size)
+
+            base_component = body['baseComponent']['measures']
+            components.extend(body['components'])
+
+        return {
+            'base': base_component,
+            'files': components
+        }
+
+    def get_project_key(self, key):
 
         url_search = sonarqube_instance + '/api/projects/search'
-        res_search = requests.get(url_search, {'projects': name}, auth=self.auth)
+        res_search = requests.get(url_search, {'projects': key}, auth=self.auth)
 
         if res_search.ok:
 
-            projects = json.loads(res_search.text)['components']
+            projects = res_search.json()['components']
 
             if len(projects) == 1:
-                return name
+                return key
 
             url_create = sonarqube_instance + '/api/projects/create' + \
-                '?name={}&project={}'.format(name, name)
+                '?name={}&project={}'.format(key, key)
 
             res_create = requests.post(url_create, auth=self.auth)
 
             if res_create.ok:
-                return json.loads(res_create.text)['project']['key']
+                return res_create.json()['project']['key']
 
             res_create.raise_for_status()
 
