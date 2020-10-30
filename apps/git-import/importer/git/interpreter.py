@@ -1,5 +1,7 @@
+from copy import Error
 import re
 from datetime import datetime
+import progressbar
 
 
 def log(log):
@@ -8,7 +10,7 @@ def log(log):
     changes = []
 
     line_buffer = []
-    for line in log:
+    for line in progressbar.progressbar(log):
 
         if re.search(r'^commit .+', line) and not line_buffer == []:
 
@@ -27,12 +29,23 @@ def log(log):
 def __interpret_commit(lines):
     id = re.search(r'^commit (.+)', lines[0]).group(1)
 
-    tmp = re.search(r'^Author: (.+) <(.+)>', lines[1])
+    if id is None:
+        raise Error('no match for id in line {}'.format(lines[0]))
+
+    tmp = re.search(r'^Author: (.+) <(.+)?>', lines[1])
+
+    if tmp is None:
+        raise Error('no match for author in line {}'.format(lines[1]))
+
     author = tmp.group(1)
     email = tmp.group(2)
 
-    date = datetime.fromtimestamp(
-        int(re.search(r'^Date: (.+)', lines[2]).group(1)))
+    tmp = int(re.search(r'^Date: (.+)', lines[2]).group(1))
+
+    if tmp is None:
+        raise Error('no match for date in line {}'.format(lines[1]))
+
+    date = datetime.fromtimestamp(tmp)
 
     comment = ''
     for line in lines[4:]:

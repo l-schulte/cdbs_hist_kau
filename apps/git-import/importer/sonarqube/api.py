@@ -18,11 +18,24 @@ class SonarqubeApi:
 
         url = sonarqube_instance + '/api/user_tokens/generate' + \
             '?name=cdbs{}'.format(time.time())
-        res = requests.post(url, auth=self.auth)
 
-        if res.ok:
-            self.token = res.json()['token']
-            return self.token
+        res = None
+
+        for _ in progressbar.progressbar(range(20)):
+
+            try:
+                res = requests.post(url, auth=self.auth)
+
+                print(res.ok)
+
+                if res.ok:
+                    self.token = res.json()['token']
+                    return self.token
+
+            except Exception:
+                ''
+
+            sleep(15)
 
         res.raise_for_status()
 
@@ -38,8 +51,6 @@ class SonarqubeApi:
                 time_string = projects[0]['lastAnalysisDate']
                 time_string = time_string[:-2] + ':' + time_string[-2:]
                 run_time = datetime.fromisoformat(time_string).timestamp()
-                print(run_time)
-                print(start_time)
 
                 if abs(run_time - start_time) < 100:
                     return True
@@ -108,3 +119,11 @@ class SonarqubeApi:
             res_create.raise_for_status()
 
         res_search.raise_for_status()
+
+    def trigger_analysis(self, runner, commit, project, project_key, token):
+
+        url = 'http://{}:{}/'.format('localhost', runner['port'])
+        print(url)
+        res = requests.get(url, {'target': project, 'commit': commit, 'project_key': project_key, 'api_key': token})
+
+        print(res)

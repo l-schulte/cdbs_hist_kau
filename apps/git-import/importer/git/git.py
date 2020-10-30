@@ -24,3 +24,10 @@ def get_file_content(target, commit_id, path):
     cli = GitCli(target)
 
     return cli.show(commit_id, path)
+
+
+def checkout_commit(target, commit_id):
+
+    cli = GitCli(target)
+
+    return cli.checkout(commit_id)

@@ -1,9 +1,9 @@
-from copy import Error
 import subprocess
 import os
 import time
+from typing import Container
 
-from importer.sonarqube import sonarqube_instance, workdir
+from importer.sonarqube import sonarqube_instance, workdir, JOBS
 
 
 def b2s(byte):
@@ -12,37 +12,42 @@ def b2s(byte):
 
 class SonarqubeCli:
 
-    def __start_container(self):
+    runners = []
+    containers = []
 
-        command = 'docker run -d --name sonarqube '\
+    def __init__(self):
+        self.start_containers()
+
+    def __del__(self):
+        self.stop_containers()
+
+    def start_containers(self):
+
+        sq_command = 'docker run -d --rm --name sonarqube '\
             + '-e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true ' \
             + '-p 9000:9000 sonarqube:8-community'
 
-        subprocess.run(command)
+        res = subprocess.run(sq_command, capture_output=True)
+        self.containers.append(b2s(res.stdout))
 
-    def analyze(self, project, project_key, token):
+        runner_build_command = 'docker build -t gradle_runner apps/gradle-runner/'
 
-        os.chdir('repos/{}'.format(project))
+        subprocess.run(runner_build_command)
 
-        build_file = open("build.gradle", "r")
-        content = build_file.read()
+        runner_command = 'docker run -d --rm --name {} -p {}:5000 gradle_runner'
 
-        if 'id "org.sonarqube" version "2.7"' not in content:
-            print('>> id "org.sonarqube" version "2.7" << missing in build.gradle file...')
-            return False
+        for i in range(JOBS):
+            runner_name = 'gradle_runner_{}'.format(i)
+            runner_port = '5004{}'.format(i)
+            res = subprocess.run(runner_command.format(runner_name, i), capture_output=True)
+            runner_id = b2s(res.stdout)
+            self.runners.append({'name': runner_name, 'id': runner_id, 'port': runner_port})
+            self.containers.append(runner_id)
 
-        command = 'gradlew.bat -x test testClasses sonarqube ' + \
-            '-D sonar.projectKey={} -D sonar.host.url={} -D sonar.login={}'\
-            .format(project_key, sonarqube_instance, token)
+        print(self.containers)
 
-        start_time = time.time()
+    def stop_containers(self):
 
-        res = subprocess.run(command)
-
-        os.chdir(workdir)
-
-        if not res.returncode == 0:
-            print('ERROR')
-            raise Error()
-
-        return start_time
+        for id in self.containers:
+            command = 'docker stop {}'.format(id[:12])
+            subprocess.run(command)

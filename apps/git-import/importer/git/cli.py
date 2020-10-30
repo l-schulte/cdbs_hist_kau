@@ -33,6 +33,17 @@ class GitCli:
 
         os.chdir(workdir)
 
+    def checkout(self, commit_id):
+
+        os.chdir('repos/{}'.format(self.target['title']))
+
+        command = 'git checkout {}'.format(commit_id)
+        res = subprocess.run(command, capture_output=True)
+
+        os.chdir(workdir)
+
+        return res
+
     def pull(self):
 
         os.chdir('repos/{}'.format(self.target['title']))

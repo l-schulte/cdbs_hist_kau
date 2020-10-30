@@ -1,6 +1,8 @@
 import os
 from importer import db
 
+JOBS = 2
+
 db_sonarqube = db.sonarqube_dump
 
 sonarqube_instance = 'http://localhost:9000'
