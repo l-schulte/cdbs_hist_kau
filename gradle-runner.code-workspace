@@ -1,14 +1,14 @@
 {
   "folders": [
     {
-      "name": "Git Import",
-      "path": "apps\\git-import"
+      "name": "Gradle Runner",
+      "path": "apps\\gradle-runner"
     }
   ],
   "settings": {
-    "terminal.integrated.cwd": ".",
+    "terminal.integrated.cwd": "../../",
     "workbench.colorCustomizations": {
-      "titleBar.activeBackground": "#a81612"
+      "titleBar.activeBackground": "#14810b"
     }
   },
   "extensions": {
