@@ -1,6 +1,6 @@
+import threading
+from time import sleep
 from importer.sonarqube import sonarqube
-from importer.git import git
-from importer.cloc import cloc
 from importer import db, db_commits, db_files
 import progressbar
 
@@ -76,17 +76,38 @@ def __calculate_metrics(repo):
     #             '$set': {'changes.{}.cloc'.format(id): stat}
     #         })
 
-    for commit in progressbar.progressbar(db_commits.find({'repo': repo['_id']})):
+    for commit in db_commits.find({'repo': repo['_id']}):
 
         if 'sonarqube' in commit:
             continue
 
-        # git.checkout_commit(repo, commit['commit_id'])
-        sonarqube_data = sonarqube.analyze(commit)
+        print('Next in queue: {} - {}'.format(commit['commit_id'][:6], commit['date']))
 
-        return
+        runner = None
+        while runner is None:
+            runner = sonarqube.get_runner()
+            sleep(15)
 
-        # db_commits.update_one({'_id': commit['_id']}, {'$set': {'sonarqube': sonarqube_data}})
+        print('Running {}'.format(commit['commit_id'][:6]))
+
+        th = threading.Thread(target=__run_threaded_sonarqube, args=(commit, runner, repo))
+        th.start()
+
+
+def __run_threaded_sonarqube(commit, runner, repo):
+
+    request, response = sonarqube.start_analysis(commit, runner, repo)
+
+    if not request.ok:
+        db_commits.update_one({'_id': commit['_id']}, {'$set': {'sonarqube': response}})
+
+    start_time = float(response)
+
+    sonarqube_data = sonarqube.read_analysis(start_time, runner)
+
+    print('{} - writing data'.format(runner['name']))
+
+    db_commits.update_one({'_id': commit['_id']}, {'$set': {'sonarqube': sonarqube_data}})
 
 
 def go():

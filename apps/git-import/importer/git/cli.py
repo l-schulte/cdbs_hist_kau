@@ -12,21 +12,21 @@ def b2s(byte):
 
 class GitCli:
 
-    def __init__(self, target):
-        self.target = target
+    def __init__(self, repo):
+        self.repo = repo
 
     def clone(self):
 
         os.chdir('repos')
 
-        command = 'git clone {}'.format(self.target['url'])
+        command = 'git clone {}'.format(self.repo['url'])
         res = subprocess.run(command,
                              capture_output=True)
 
         db_log.insert_one({'text': command,
                            'time': datetime.datetime.now(),
                            'data': {
-                               'target': self.target['_id'],
+                               'repo': self.repo['_id'],
                                'error': b2s(res.stderr),
                                'output': b2s(res.stdout)
                            }})
@@ -35,7 +35,7 @@ class GitCli:
 
     def checkout(self, commit_id):
 
-        os.chdir('repos/{}'.format(self.target['title']))
+        os.chdir('repos/{}'.format(self.repo['title']))
 
         command = 'git checkout {}'.format(commit_id)
         res = subprocess.run(command, capture_output=True)
@@ -46,7 +46,7 @@ class GitCli:
 
     def pull(self):
 
-        os.chdir('repos/{}'.format(self.target['title']))
+        os.chdir('repos/{}'.format(self.repo['title']))
 
         command = 'git pull --all'
         res = subprocess.run(command, capture_output=True)
@@ -54,7 +54,7 @@ class GitCli:
         db_log.insert_one({'text': command,
                            'time': datetime.datetime.now(),
                            'data': {
-                               'target': self.target['_id'],
+                               'repo': self.repo['_id'],
                                'error': b2s(res.stderr),
                                'output': b2s(res.stdout)
                            }})
@@ -63,7 +63,7 @@ class GitCli:
 
     def log(self):
 
-        os.chdir('repos/{}'.format(self.target['title']))
+        os.chdir('repos/{}'.format(self.repo['title']))
 
         command = 'git log --numstat --no-merges --date=unix'
         res = subprocess.run(command, capture_output=True)
@@ -74,7 +74,7 @@ class GitCli:
 
     def show(self, commit_id, path):
 
-        os.chdir('repos/{}'.format(self.target['title']))
+        os.chdir('repos/{}'.format(self.repo['title']))
 
         command = 'git show {}:{}'.format(commit_id, path)
         res = subprocess.run(command, capture_output=True)

@@ -5,12 +5,12 @@ from importer.git import interpreter
 from importer.git.cli import GitCli
 
 
-def crawl(target):
+def crawl(repo):
 
-    db_log.insert_one({'text': 'Import for repo {}'.format(target['title']),
+    db_log.insert_one({'text': 'Import for repo {}'.format(repo['title']),
                        'time': datetime.datetime.now()})
 
-    cli = GitCli(target)
+    cli = GitCli(repo)
 
     cli.clone()
     cli.pull()
@@ -19,15 +19,15 @@ def crawl(target):
     return interpreter.log(log)
 
 
-def get_file_content(target, commit_id, path):
+def get_file_content(repo, commit_id, path):
 
-    cli = GitCli(target)
+    cli = GitCli(repo)
 
     return cli.show(commit_id, path)
 
 
-def checkout_commit(target, commit_id):
+def checkout_commit(repo, commit_id):
 
-    cli = GitCli(target)
+    cli = GitCli(repo)
 
     return cli.checkout(commit_id)

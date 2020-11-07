@@ -1,8 +1,8 @@
 from gradle.cli import GradleCli
 
 
-def run_build(project, project_key, token):
+def run_build(repo, project_key, token):
 
     cli = GradleCli()
 
-    return cli.analyze(project, project_key, token)
+    return cli.analyze(repo, project_key, token)

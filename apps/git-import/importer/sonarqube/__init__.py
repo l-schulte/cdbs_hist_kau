@@ -1,7 +1,7 @@
 import os
 from importer import db
 
-JOBS = 2
+JOBS = 5
 
 db_sonarqube = db.sonarqube_dump
 
@@ -28,3 +28,7 @@ __metric_keys = [
 ]
 
 metric_keys = ', '.join(__metric_keys)
+
+
+def print_runner(runner, message):
+    print(' {} > {}'.format(runner['name'], message))

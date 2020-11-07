@@ -2,7 +2,7 @@ import subprocess
 import os
 import time
 
-from gradle import sonarqube_instance, workdir
+from gradle import sonarqube_instance, workdir, sonarqube_plugin
 
 
 def b2s(byte):
@@ -11,17 +11,27 @@ def b2s(byte):
 
 class GradleCli:
 
-    def analyze(self, project, project_key, token):
+    def analyze(self, repo, project_key, token):
 
-        os.chdir('repos/{}'.format(project))
+        os.chdir('repos/{}'.format(repo['title']))
+
+        if not os.path.isfile('build.gradle'):
+            return 'Missing build.gradle', 400
 
         build_file = open("build.gradle", "r")
         content = build_file.read()
+        build_file.close()
 
-        if 'id "org.sonarqube" version "2.7"' not in content:
-            print(
-                '>> id "org.sonarqube" version "2.7" << missing in build.gradle file...')
-            return False
+        if sonarqube_plugin not in content:
+            lines = content.splitlines()
+            for i in range(len(lines)):
+                if lines[i].startswith('plugins {'):
+                    lines.insert(i+1, '    ' + sonarqube_plugin)
+                    break
+
+            build_file = open("build.gradle", "w")
+            build_file.write('\n'.join(lines))
+            build_file.close()
 
         command = './gradlew -x test testClasses sonarqube ' + \
             '-D sonar.projectKey={} -D sonar.host.url={} -D sonar.login={}'\
@@ -29,12 +39,12 @@ class GradleCli:
 
         start_time = time.time()
 
-        res = subprocess.run(command, capture_output=True)
+        res = subprocess.run(command, capture_output=True, shell=True)
 
         os.chdir(workdir)
 
         if not res.returncode == 0:
             print(b2s(res.stdout))
-            return None
+            return b2s(res.stdout), 400
 
-        return start_time
+        return str(start_time), 200

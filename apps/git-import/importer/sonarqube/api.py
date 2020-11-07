@@ -4,7 +4,7 @@ import math
 from time import sleep
 import requests
 from requests.models import HTTPBasicAuth
-import progressbar
+import json
 
 from importer.sonarqube import sonarqube_instance, metric_keys
 
@@ -21,12 +21,10 @@ class SonarqubeApi:
 
         res = None
 
-        for _ in progressbar.progressbar(range(20)):
+        for i in range(20):
 
             try:
                 res = requests.post(url, auth=self.auth)
-
-                print(res.ok)
 
                 if res.ok:
                     self.token = res.json()['token']
@@ -43,11 +41,12 @@ class SonarqubeApi:
 
         url_search = sonarqube_instance + '/api/projects/search'
 
-        for _ in progressbar.progressbar(range(20)):
+        for _ in range(20):
             res_search = requests.get(url_search, {'projects': key}, auth=self.auth)
             projects = res_search.json()['components']
 
-            if len(projects) == 1:
+            if len(projects) >= 1 and 'lastAnalysisDate' in projects[0]:
+
                 time_string = projects[0]['lastAnalysisDate']
                 time_string = time_string[:-2] + ':' + time_string[-2:]
                 run_time = datetime.fromisoformat(time_string).timestamp()
@@ -99,31 +98,47 @@ class SonarqubeApi:
     def get_project_key(self, key):
 
         url_search = sonarqube_instance + '/api/projects/search'
-        res_search = requests.get(url_search, {'projects': key}, auth=self.auth)
 
-        if res_search.ok:
+        res_search = None
 
-            projects = res_search.json()['components']
+        for _ in range(3):
 
-            if len(projects) == 1:
-                return key
+            try:
+                res_search = requests.get(url_search, {'projects': key}, auth=self.auth)
 
-            url_create = sonarqube_instance + '/api/projects/create' + \
-                '?name={}&project={}'.format(key, key)
+                if res_search.ok:
 
-            res_create = requests.post(url_create, auth=self.auth)
+                    projects = res_search.json()['components']
 
-            if res_create.ok:
-                return res_create.json()['project']['key']
+                    if len(projects) == 1:
+                        return key
 
-            res_create.raise_for_status()
+                    url_create = sonarqube_instance + '/api/projects/create' + \
+                        '?name={}&project={}'.format(key, key)
+                    res_create = requests.post(url_create, auth=self.auth)
+
+                    if res_create.ok:
+                        return res_create.json()['project']['key']
+
+                    res_create.raise_for_status()
+
+            except Exception:
+                ''
+
+            sleep(15)
 
         res_search.raise_for_status()
 
-    def trigger_analysis(self, runner, commit, project, project_key, token):
+    def trigger_analysis(self, runner, commit, repo, project_key, token):
 
         url = 'http://{}:{}/'.format('localhost', runner['port'])
-        print(url)
-        res = requests.get(url, {'target': project, 'commit': commit, 'project_key': project_key, 'api_key': token})
+        repo['_id'] = ''
+        res = requests.post(
+            url,
+            params={'commit': commit['commit_id'], 'project_key': project_key, 'api_key': token},
+            json=json.dumps(repo))
 
-        print(res)
+        if res.ok:
+            return res, res.text
+
+        return res, '{} - {}'.format(res.status_code, res.reason)

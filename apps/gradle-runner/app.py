@@ -1,25 +1,34 @@
 from flask import Flask, request
+import json
 
-import git
-import gradle
+from git import git
+from gradle import gradle
 
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route('/', methods=["POST"])
 def start():
 
-    target = request.args.get('target', '')
-    commit = request.args.get('commit', '')
-    project_key = request.args.get('project_key', '')
-    api_key = request.args.get('api_key', '')
+    repo = json.loads(request.get_json())
 
-    git.checkout_commit(target, commit)
+    commit = request.values.get('commit', '')
+    project_key = request.values.get('project_key', '')
+    api_key = request.values.get('api_key', '')
 
-    start_time = gradle.run_build(target, project_key, api_key)
+    checkout = git.checkout_commit(repo, commit)
 
-    return start_time
+    print(checkout)
+
+    result = gradle.run_build(repo, project_key, api_key)
+
+    return result
+
+
+@app.route('/check')
+def check_running():
+    return 'running', 200
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0')

@@ -10,8 +10,11 @@ def b2s(byte):
 
 class GitCli:
 
-    def __init__(self, target):
-        self.target = target
+    def __init__(self, repo):
+        self.repo = repo
+
+        if not os.path.isdir('repos'):
+            os.mkdir('repos')
 
         self.clone()
 
@@ -19,28 +22,29 @@ class GitCli:
 
         os.chdir('repos')
 
-        command = 'git clone {}'.format(self.target['url'])
-        subprocess.run(command,
-                       capture_output=True)
+        command = 'git clone {}'.format(self.repo['url'])
+        subprocess.run(command, capture_output=True, shell=True)
 
         os.chdir(workdir)
 
     def checkout(self, commit_id):
 
-        os.chdir('repos/{}'.format(self.target['title']))
+        os.chdir('repos/{}'.format(self.repo['title']))
 
-        command = 'git checkout {}'.format(commit_id)
-        res = subprocess.run(command, capture_output=True)
+        command = 'git checkout -f {}'.format(commit_id)
+        res = subprocess.run(command, capture_output=True, shell=True)
 
         os.chdir(workdir)
 
-        return res
+        print(b2s(res.stderr))
+
+        return b2s(res.stdout)
 
     def pull(self):
 
-        os.chdir('repos/{}'.format(self.target['title']))
+        os.chdir('repos/{}'.format(self.repo['title']))
 
         command = 'git pull --all'
-        subprocess.run(command, capture_output=True)
+        subprocess.run(command, capture_output=True, shell=True)
 
         os.chdir(workdir)

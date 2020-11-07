@@ -1,8 +1,8 @@
 from git.cli import GitCli
 
 
-def checkout_commit(target, commit_id):
+def checkout_commit(repo, commit_id):
 
-    cli = GitCli(target)
+    cli = GitCli(repo)
 
     return cli.checkout(commit_id)
