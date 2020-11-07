@@ -16,7 +16,7 @@ class GradleCli:
         os.chdir('repos/{}'.format(repo['title']))
 
         if not os.path.isfile('build.gradle'):
-            return 'Missing build.gradle', 400
+            return 'Missing build.gradle', 500
 
         build_file = open("build.gradle", "r")
         content = build_file.read()
@@ -45,6 +45,6 @@ class GradleCli:
 
         if not res.returncode == 0:
             print(b2s(res.stdout))
-            return b2s(res.stdout), 400
+            return b2s(res.stdout), 500
 
         return str(start_time), 200
