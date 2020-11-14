@@ -1,5 +1,9 @@
-FROM openjdk:slim
+FROM openjdk:13-jdk-buster
 COPY --from=python:3.7 / /
+
+WORKDIR /home/apps/repos
+
+RUN git clone https://github.com/JabRef/jabref.git
 
 WORKDIR /home/apps
 
