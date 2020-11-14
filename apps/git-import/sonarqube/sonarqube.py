@@ -1,8 +1,8 @@
-from sonarqube.cli import SonarqubeCli
+from sonarqube.runner import GradleRunner
 from sonarqube.api import SonarqubeApi
-from sonarqube import API_USERNAME, API_PASSWORD, print_runner, JDK_VERSION
+from sonarqube import API_USERNAME, API_PASSWORD, print_runner
 
-cli = SonarqubeCli(JDK_VERSION)
+gradle = GradleRunner()
 api = SonarqubeApi(API_USERNAME, API_PASSWORD)
 
 print('Loading api token.')
@@ -11,18 +11,18 @@ token = api.get_token()
 
 def start_analysis(commit, runner, repo):
 
-    key = api.get_project_key('{}_{}'.format(runner['name'], runner['id'][:6]))
+    key = api.get_project_key(runner)
 
     res, start_time = api.trigger_analysis(runner, commit, repo, key, token)
 
-    cli.unlock_runner(runner)
+    gradle.unlock_runner(runner)
 
     return res, start_time
 
 
 def read_analysis(start_time, runner):
 
-    key = api.get_project_key('{}_{}'.format(runner['name'], runner['id'][:6]))
+    key = api.get_project_key(runner)
 
     print_runner(runner, 'Waiting for results.')
 
@@ -46,4 +46,4 @@ def read_analysis(start_time, runner):
 
 def get_runner():
 
-    return cli.lock_runner()
+    return gradle.lock_runner()

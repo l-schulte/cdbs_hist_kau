@@ -131,7 +131,7 @@ class SonarqubeApi:
 
     def trigger_analysis(self, runner, commit, repo, project_key, token):
 
-        url = 'http://{}:{}/'.format('localhost', runner['port'])
+        url = 'http://{}:5000/'.format(runner)
         repo['_id'] = ''
         res = requests.post(
             url,

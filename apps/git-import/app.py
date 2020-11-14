@@ -1,11 +1,10 @@
+import progressbar
+import pymongo
 import threading
 from time import sleep
-
-import pymongo
-from sonarqube import sonarqube
-from git import git
 from __init__ import db, db_commits, db_files
-import progressbar
+from git import git
+from sonarqube import sonarqube
 
 repos = list(db.repos.find())
 
@@ -80,7 +79,7 @@ def __calculate_metrics(repo):
     #         })
 
     for commit in db_commits.find({'repo': repo['_id'], 'sonarqube.status': {'$in': [False, None]}})\
-            .sort('date', pymongo.DESCENDING):
+            .sort('date', pymongo.DESCENDING).batch_size(10):
 
         print('Next in queue: {} - {}'.format(commit['commit_id'][:6], commit['date']))
 
@@ -100,7 +99,7 @@ def __run_threaded_sonarqube(commit, runner, repo):
     request, response = sonarqube.start_analysis(commit, runner, repo)
 
     if not request.ok:
-        print('{} - Analysis ran into an error: {}'.format(runner['name'], response))
+        print('{} - Analysis ran into an error: {}'.format(runner, response))
         db_commits.update_one({'_id': commit['_id']}, {'$set': {'sonarqube': {'error': response, 'status': False}}})
         return
 
@@ -108,12 +107,13 @@ def __run_threaded_sonarqube(commit, runner, repo):
 
     sonarqube_data = sonarqube.read_analysis(start_time, runner)
 
-    print('{} - writing data'.format(runner['name']))
+    print('{} - writing data'.format(runner))
 
     db_commits.update_one({'_id': commit['_id']}, {'$set': {'sonarqube': sonarqube_data}})
 
 
 def go():
+
     for repo in repos:
 
         # print('Crawling...')
@@ -129,4 +129,5 @@ def go():
         print('Done')
 
 
+print('GO')
 go()

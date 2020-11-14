@@ -1,12 +1,10 @@
 import os
 from __init__ import db
 
-JDK_VERSION = 13
-JOBS = 6
-
 db_sonarqube = db.sonarqube_dump
 
-sonarqube_instance = 'http://localhost:9000'
+sonarqube_instance = 'http://sonarqube:9000'
+gradle_runner_basename = 'cdbs_gradle-runner_{}'
 workdir = os.getcwd()
 
 API_USERNAME = 'admin'
@@ -32,4 +30,4 @@ metric_keys = ', '.join(__metric_keys)
 
 
 def print_runner(runner, message):
-    print(' {} > {}'.format(runner['name'], message))
+    print(' {} > {}'.format(runner, message))
