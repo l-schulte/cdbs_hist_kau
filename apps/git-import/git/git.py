@@ -1,8 +1,8 @@
 import datetime
 
-from importer import db_log
-from importer.git import interpreter
-from importer.git.cli import GitCli
+from __init__ import db_log
+from git import interpreter
+from git.cli import GitCli
 
 
 def crawl(repo):
@@ -14,6 +14,7 @@ def crawl(repo):
 
     cli.clone()
     cli.pull()
+    cli.checkout(repo['start'])
 
     log = cli.log()
     return interpreter.log(log)

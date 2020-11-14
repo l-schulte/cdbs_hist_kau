@@ -1,7 +1,7 @@
 import subprocess
 import threading
 
-from importer.sonarqube import JOBS
+from sonarqube import JOBS
 
 
 def b2s(byte):
@@ -15,12 +15,12 @@ class SonarqubeCli:
     __idle_runners = []
     containers = []
 
-    def __init__(self):
+    def __init__(self, jdk_version):
         self.__lock = threading.Lock()
-        self.start_containers()
+        self.start_containers(jdk_version)
 
-    def __del__(self):
-        self.stop_containers()
+    # def __del__(self):
+    #     self.stop_containers()
 
     def __sem_lock(self, b):
         if b:
@@ -40,7 +40,7 @@ class SonarqubeCli:
         self.__sem_lock(False)
         return runner
 
-    def start_containers(self):
+    def start_containers(self, jdk_version):
 
         self.__sem_lock(True)
 
@@ -55,16 +55,32 @@ class SonarqubeCli:
         res = subprocess.run(sq_command, capture_output=True)
         self.containers.append(b2s(res.stdout))
 
-        runner_build_command = 'docker build -t gradle_runner apps/gradle-runner/'
+        runner_jdk8_build_command = \
+            'docker build -f apps/gradle-runner/openjdk8.dockerfile -t gradle_runner_jdk{} apps/gradle-runner/'\
+            .format(jdk_version)
+        runner_jdk13_build_command = \
+            'docker build -f apps/gradle-runner/openjdk13.dockerfile -t gradle_runner_jdk{} apps/gradle-runner/'\
+            .format(jdk_version)
+
+        if jdk_version == 8:
+            runner_build_command = runner_jdk8_build_command
+        elif jdk_version == 13:
+            runner_build_command = runner_jdk13_build_command
+        else:
+            print('Invalid jdk version specified. Please extend gradle-runner dockerfile '
+                  + 'and the start_containers function of sonarqube/cli.py.')
+            self.__sem_lock(False)
+            self.stop_containers()
+            return
 
         subprocess.run(runner_build_command)
 
-        runner_command = 'docker run -d --rm --net=sonarqube_network --name {} -p {}:5000 gradle_runner'
+        runner_command = 'docker run -d --rm --net=sonarqube_network --name {} -p {}:5000 gradle_runner_jdk{}'
 
         for i in range(JOBS):
             runner_name = 'gradle_runner_{}'.format(i)
             runner_port = 50040 + i
-            res = subprocess.run(runner_command.format(runner_name, runner_port), capture_output=True)
+            res = subprocess.run(runner_command.format(runner_name, runner_port, jdk_version), capture_output=True)
             runner_id = b2s(res.stdout)
             self.__runners.append({'name': runner_name, 'id': runner_id, 'port': runner_port})
             self.containers.append(runner_id)

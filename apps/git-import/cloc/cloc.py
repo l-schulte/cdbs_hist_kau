@@ -1,6 +1,6 @@
 
 import tempfile
-from importer.cloc.cli import ClocCli
+from cloc.cli import ClocCli
 
 
 def analyze_file(path, content):

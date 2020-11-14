@@ -2,8 +2,8 @@ import os
 import subprocess
 import datetime
 
-from importer import db_log
-from importer.git import workdir
+from __init__ import db_log
+from git import workdir
 
 
 def b2s(byte):

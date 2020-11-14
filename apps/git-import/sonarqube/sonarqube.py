@@ -1,9 +1,9 @@
-from importer.sonarqube.cli import SonarqubeCli
-from importer.sonarqube.api import SonarqubeApi
-from importer.sonarqube import api_username, api_password, print_runner
+from sonarqube.cli import SonarqubeCli
+from sonarqube.api import SonarqubeApi
+from sonarqube import API_USERNAME, API_PASSWORD, print_runner, JDK_VERSION
 
-cli = SonarqubeCli()
-api = SonarqubeApi(api_username, api_password)
+cli = SonarqubeCli(JDK_VERSION)
+api = SonarqubeApi(API_USERNAME, API_PASSWORD)
 
 print('Loading api token.')
 token = api.get_token()
@@ -30,7 +30,7 @@ def read_analysis(start_time, runner):
 
         print_runner(runner, 'Could not read results')
         return {
-            'status': 'Error'
+            'status': False
         }
 
     print_runner(runner, 'Results are ready.')
@@ -38,6 +38,8 @@ def read_analysis(start_time, runner):
     analysis_result = api.get_analysis_result(key)
 
     print_runner(runner, 'Read results.')
+
+    analysis_result['status'] = True
 
     return analysis_result
 

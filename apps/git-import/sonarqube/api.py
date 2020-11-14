@@ -6,7 +6,7 @@ import requests
 from requests.models import HTTPBasicAuth
 import json
 
-from importer.sonarqube import sonarqube_instance, metric_keys
+from sonarqube import sonarqube_instance, metric_keys
 
 
 class SonarqubeApi:
@@ -141,4 +141,4 @@ class SonarqubeApi:
         if res.ok:
             return res, res.text
 
-        return res, '{} - {}'.format(res.status_code, res.reason)
+        return res, '{} - {} \n {}'.format(res.status_code, res.reason, res.text)

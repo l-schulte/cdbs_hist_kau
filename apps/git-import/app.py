@@ -1,7 +1,10 @@
 import threading
 from time import sleep
-from importer.sonarqube import sonarqube
-from importer import db, db_commits, db_files
+
+import pymongo
+from sonarqube import sonarqube
+from git import git
+from __init__ import db, db_commits, db_files
 import progressbar
 
 repos = list(db.repos.find())
@@ -76,10 +79,8 @@ def __calculate_metrics(repo):
     #             '$set': {'changes.{}.cloc'.format(id): stat}
     #         })
 
-    for commit in db_commits.find({'repo': repo['_id']}):
-
-        if 'sonarqube' in commit:
-            continue
+    for commit in db_commits.find({'repo': repo['_id'], 'sonarqube.status': {'$in': [False, None]}})\
+            .sort('date', pymongo.DESCENDING):
 
         print('Next in queue: {} - {}'.format(commit['commit_id'][:6], commit['date']))
 
@@ -99,7 +100,9 @@ def __run_threaded_sonarqube(commit, runner, repo):
     request, response = sonarqube.start_analysis(commit, runner, repo)
 
     if not request.ok:
-        db_commits.update_one({'_id': commit['_id']}, {'$set': {'sonarqube': response}})
+        print('{} - Analysis ran into an error: {}'.format(runner['name'], response))
+        db_commits.update_one({'_id': commit['_id']}, {'$set': {'sonarqube': {'error': response, 'status': False}}})
+        return
 
     start_time = float(response)
 

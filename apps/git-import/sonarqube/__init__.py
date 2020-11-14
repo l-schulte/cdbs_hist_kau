@@ -1,15 +1,16 @@
 import os
-from importer import db
+from __init__ import db
 
-JOBS = 5
+JDK_VERSION = 13
+JOBS = 6
 
 db_sonarqube = db.sonarqube_dump
 
 sonarqube_instance = 'http://localhost:9000'
 workdir = os.getcwd()
 
-api_username = 'admin'
-api_password = 'admin'
+API_USERNAME = 'admin'
+API_PASSWORD = 'admin'
 
 __metric_keys = [
     'ncloc',                    # Lines of code
