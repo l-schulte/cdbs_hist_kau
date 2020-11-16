@@ -34,7 +34,7 @@ services:
   gradle-runner:
     build:
       context: apps/gradle-runner/
-      dockerfile: openjdk13.dockerfile
+      dockerfile: openjdk8.dockerfile
     networks:
       - cdbs_net
 

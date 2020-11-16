@@ -1,0 +1,21 @@
+{
+  "folders": [
+    {
+      "name": "Data Dashboard",
+      "path": "apps\\data-dashboard"
+    }
+  ],
+  "settings": {
+    "terminal.integrated.cwd": "../../",
+    "workbench.colorCustomizations": {
+      "titleBar.activeBackground": "#101996"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "michelemelluso.gitignore",
+      "eamodio.gitlens",
+      "esbenp.prettier-vscode"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+METRICS = ['comment_lines',
+           'comment_lines_density',
+           'complexity',
+           'ncloc',
+           'functions',
+           'statements',
+           'duplicated_lines',
+           'violations',
+           'code_smells',
+           'bugs',
+           'vulnerabilities',
+           'sqale_index',
+           'sqale_debt_ratio']
