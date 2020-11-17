@@ -20,8 +20,7 @@ class GitCli:
         os.chdir('repos')
 
         command = 'git clone {}'.format(self.repo['url'])
-        res = subprocess.run(command,
-                             capture_output=True)
+        res = subprocess.run(command, capture_output=True, shell=True)
 
         db_log.insert_one({'text': command,
                            'time': datetime.datetime.now(),
@@ -38,7 +37,7 @@ class GitCli:
         os.chdir('repos/{}'.format(self.repo['title']))
 
         command = 'git checkout {}'.format(commit_id)
-        res = subprocess.run(command, capture_output=True)
+        res = subprocess.run(command, capture_output=True, shell=True)
 
         os.chdir(workdir)
 
@@ -49,7 +48,7 @@ class GitCli:
         os.chdir('repos/{}'.format(self.repo['title']))
 
         command = 'git pull --all'
-        res = subprocess.run(command, capture_output=True)
+        res = subprocess.run(command, capture_output=True, shell=True)
 
         db_log.insert_one({'text': command,
                            'time': datetime.datetime.now(),
@@ -66,7 +65,7 @@ class GitCli:
         os.chdir('repos/{}'.format(self.repo['title']))
 
         command = 'git log --numstat --no-merges --date=unix'
-        res = subprocess.run(command, capture_output=True)
+        res = subprocess.run(command, capture_output=True, shell=True)
 
         os.chdir(workdir)
 
@@ -77,7 +76,7 @@ class GitCli:
         os.chdir('repos/{}'.format(self.repo['title']))
 
         command = 'git show {}:{}'.format(commit_id, path)
-        res = subprocess.run(command, capture_output=True)
+        res = subprocess.run(command, capture_output=True, shell=True)
 
         os.chdir(workdir)
 
