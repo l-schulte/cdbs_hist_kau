@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-MONGODB_ADDR = 'mongodb'
+MONGODB_ADDR = 'localhost'
 
 client = MongoClient('mongodb://%s:%s@%s' %
                      ('root', 'localdontuseglobal', MONGODB_ADDR))
