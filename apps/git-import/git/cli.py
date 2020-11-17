@@ -7,7 +7,7 @@ from git import workdir
 
 
 def b2s(byte):
-    return '' if not byte else byte.decode("utf-8")
+    return '' if not byte else byte.decode("utf-8", 'ignore')
 
 
 class GitCli:

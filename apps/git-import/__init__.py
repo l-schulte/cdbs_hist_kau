@@ -9,3 +9,5 @@ db = client.cdbs_db
 db_log = db.import_log
 db_commits = db.commits
 db_files = db.files
+
+db_commits.create_index('date')

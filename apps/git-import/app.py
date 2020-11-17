@@ -26,7 +26,7 @@ def __store_changes(repo, changes):
     for change in progressbar.progressbar(changes):
 
         file = db_files.find_one({
-            'path': change['old_path']
+            'tmp_path': change['old_path']
         })
 
         if file:
@@ -34,11 +34,11 @@ def __store_changes(repo, changes):
                 '_id': file['_id']
             }, {
                 '$set': {
-                    'path': change['path'],
-                    'repo': repo['_id'],
-                    'changes': {
-                        change['commit_id']: change
-                    }
+                    'tmp_path': change['path'],
+                    'repo': repo['_id']
+                },
+                '$push': {
+                    'changes': change
                 }
             }, True)
 
@@ -46,10 +46,9 @@ def __store_changes(repo, changes):
         else:
             res = db_files.insert_one({
                 'path': change['path'],
+                'tmp_path': change['path'],
                 'repo': repo['_id'],
-                'changes': {
-                    change['commit_id']: change
-                }
+                'changes': [change]
             })
 
             file_id = res.inserted_id
@@ -58,7 +57,10 @@ def __store_changes(repo, changes):
             'commit_id': change['commit_id']
         }, {
             '$push': {
-                'files': file_id
+                'files': {
+                    'id': file_id,
+                    'path': change['path']
+                }
             }
         })
 
@@ -79,7 +81,7 @@ def __calculate_metrics(repo):
     #         })
 
     for commit in db_commits.find({'repo': repo['_id'], 'sonarqube.status': {'$in': [False, None]}})\
-            .sort('date', pymongo.DESCENDING).batch_size(10):
+            .sort('date', pymongo.DESCENDING).batch_size(1):
 
         print('Next in queue: {} - {}'.format(commit['commit_id'][:6], commit['date']))
 
@@ -116,15 +118,15 @@ def go():
 
     for repo in repos:
 
-        # print('Crawling...')
-        # commits, changes = git.crawl(repo)
+        print('Crawling...')
+        commits, changes = git.crawl(repo)
 
-        # print('Saving...')
-        # __store_commits(repo, commits)
-        # __store_changes(repo, changes)
+        print('Saving...')
+        __store_commits(repo, commits)
+        __store_changes(repo, changes)
 
-        print('Calculating...')
-        __calculate_metrics(repo)
+        # print('Calculating...')
+        # __calculate_metrics(repo)
 
         print('Done')
 
