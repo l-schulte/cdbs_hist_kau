@@ -1,10 +1,14 @@
-import plotly.graph_objects as go
-import numpy as np
+import plotly.express as px
 
-N = 1000
-t = np.linspace(0, 10, 100)
-y = np.sin(t)
+# N = 1000
+# t = np.linspace(0, 10, 100)
+# y = np.sin(t)
 
-fig = go.Figure(data=go.Scatter(x=t, y=y, mode='markers'))
+# fig = go.Figure(data=go.Scatter(x=t, y=y, mode='markers'))
 
-fig.show()
+# fig.show()
+
+
+def draw_scatter(x, y, title):
+    fig = px.line(x=x, y=y, title=title)
+    fig.show()

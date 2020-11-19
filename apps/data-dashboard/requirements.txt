@@ -2,3 +2,4 @@ numpy
 plotly
 pymongo
 re
+pandas

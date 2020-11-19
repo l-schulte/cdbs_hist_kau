@@ -5,11 +5,8 @@ import modules.history as history
 def get_metrics():
 
     mapping = architecture.get_mapping()
-    metrics = {}
+    module_metrics = {}
 
-    for module in mapping.keys():
-        metrics[module] = history.get_metrics(mapping[module])
-        break
+    module_metrics['cli'] = history.get_metrics_per_day(mapping['cli'])
 
-
-    return metrics
+    return module_metrics
