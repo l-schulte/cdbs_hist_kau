@@ -26,7 +26,7 @@ def __store_changes(repo, changes):
     for change in progressbar.progressbar(changes):
 
         file = db_files.find_one({
-            'tmp_path': change['old_path']
+            'tmp_path': change['path']
         })
 
         if file:
@@ -34,7 +34,7 @@ def __store_changes(repo, changes):
                 '_id': file['_id']
             }, {
                 '$set': {
-                    'tmp_path': change['path'],
+                    'tmp_path': change['old_path'],
                     'repo': repo['_id']
                 },
                 '$push': {
@@ -46,7 +46,7 @@ def __store_changes(repo, changes):
         else:
             res = db_files.insert_one({
                 'path': change['path'],
-                'tmp_path': change['path'],
+                'tmp_path': change['old_path'],
                 'repo': repo['_id'],
                 'changes': [change]
             })

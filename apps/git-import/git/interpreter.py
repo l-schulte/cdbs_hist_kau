@@ -77,10 +77,10 @@ def __interpret_changes(lines, commit_id, date):
             path_change = re.search(r'(.*){(.*) => (.*)}(.*)', rline.group(3))
 
             if path_change:
-                path = path_change.group(1)\
-                    + path_change.group(3) + path_change.group(4)
-                old_path = path_change.group(1)\
-                    + path_change.group(2) + path_change.group(4)
+                path = (path_change.group(1)
+                        + path_change.group(3) + path_change.group(4)).replace('//', '/')
+                old_path = (path_change.group(1)
+                            + path_change.group(2) + path_change.group(4)).replace('//', '/')
             else:
                 path = rline.group(3)
                 old_path = rline.group(3)
