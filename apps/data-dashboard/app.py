@@ -1,14 +1,17 @@
 from modules import modules
 from plotter import plotter
+from files import files
+from importer import importer
 
-modules_metrics = modules.get_metrics()
+# importer.get_success_graph()
 
-for module, metrics in modules_metrics.items():
+paths = [
+    'src/main/java/net/sf/jabref/importer/fetcher/ACMPortalFetcher.java'
+    # 'src/main/java/net/sf/jabref/importer/ZipFileChooser.java',
+    # 'src/main/java/net/sf/jabref/logic/xmp/XMPUtil.java',
+    # 'src/main/java/net/sf/jabref/logic/xmp/XMPSchemaBibtex.java',
+    # 'src/main/java/net/sf/jabref/gui/preftabs/XmpPrefsTab.java'
+]
 
-    for metric, days in metrics.items():
-        try:
-            x = [*days.keys()]
-            y = [v['value'] / v['count'] for v in days.values()]
-            plotter.draw_scatter(x, y, metric)
-        except Exception:
-            print('{} metric skipped'.format(metric))
+
+files.get_graphs(paths)
