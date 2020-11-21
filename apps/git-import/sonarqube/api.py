@@ -133,6 +133,7 @@ class SonarqubeApi:
 
         url = 'http://{}:5000/'.format(runner)
         repo['_id'] = ''
+        repo['end'] = ''
         res = requests.post(
             url,
             params={'commit': commit['commit_id'], 'project_key': project_key, 'api_key': token},

@@ -10,7 +10,12 @@ app = Flask(__name__)
 @app.route('/', methods=["POST"])
 def start():
 
-    repo = json.loads(request.get_json())
+    j = request.get_json()
+
+    if type(j) is dict:
+        repo = j
+    else:
+        repo = json.loads(j)
 
     commit = request.values.get('commit', '')
     project_key = request.values.get('project_key', '')

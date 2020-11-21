@@ -81,7 +81,7 @@ def __calculate_metrics(repo):
     #         })
 
     for commit in db_commits.find({'repo': repo['_id'], 'sonarqube.status': {'$in': [False, None]}})\
-            .sort('date', pymongo.DESCENDING).batch_size(1):
+            .sort('date', pymongo.ASCENDING).batch_size(1):
 
         print('Next in queue: {} - {}'.format(commit['commit_id'][:6], commit['date']))
 
@@ -118,15 +118,15 @@ def go():
 
     for repo in repos:
 
-        print('Crawling...')
-        commits, changes = git.crawl(repo)
+        # print('Crawling...')
+        # commits, changes = git.crawl(repo)
 
-        print('Saving...')
-        __store_commits(repo, commits)
-        __store_changes(repo, changes)
+        # print('Saving...')
+        # __store_commits(repo, commits)
+        # __store_changes(repo, changes)
 
-        # print('Calculating...')
-        # __calculate_metrics(repo)
+        print('Calculating...')
+        __calculate_metrics(repo)
 
         print('Done')
 
