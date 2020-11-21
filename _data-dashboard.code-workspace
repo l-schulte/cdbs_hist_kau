@@ -6,7 +6,7 @@
     }
   ],
   "settings": {
-    "terminal.integrated.cwd": "../../",
+    "terminal.integrated.cwd": ".",
     "workbench.colorCustomizations": {
       "titleBar.activeBackground": "#101996"
     }
