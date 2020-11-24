@@ -1,9 +1,7 @@
 from tensorflow import keras
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-import json
-import random
+import matplotlib.pyplot as plt
 
 from __init__ import Metric
 
@@ -18,58 +16,75 @@ def __read_data():
 
     data = {}
     columns = [e.value for e in Metric]
+    # columns = [m.value for m in [Metric.COMMENT_LINES, Metric.COMPLEXITY,
+    #                              Metric.CHURN, Metric.STATEMENTS, Metric.FUNCTIONS, Metric.SQALE_INDEX]]
+    print(columns)
     columns.append('date')
 
     for set in sets:
 
         tmp = df[df.path == set]
         tmp = tmp[columns]
+        tmp = tmp.fillna(0)
         data[set] = tmp.sort_values('date')
 
     return truth, data
 
 
-def go():
+def __create_x_array(data, paths, max_len):
 
-    truth, data = __read_data()
+    x = None
 
-    train_truth = truth.sample(frac=0.75).reset_index()
-    test_truth = truth.copy().drop(index=train_truth.index).reset_index()
+    for k in paths:
 
-    num_classes = 2
+        d = data[k].to_numpy()
+        lines_append = max_len - d.shape[0]
+        if lines_append > 0:
+            zeros = np.array([np.zeros(d[0].shape) for _ in range(lines_append)])
+            d = np.append(d, zeros, 0)
 
-    print(data['src/main/java/net/sf/jabref/MetaData.java'].values.shape)
-
-    y_train = np.array(train_truth.good)
-
-    x_train = None
-
-    for k in train_truth.path:
-
-        if x_train is None:
-            x_train = np.array([np.array(data[k].values)])
-            print(x_train)
-            print(x_train.shape)
+        if x is None:
+            x = np.array([d])
             continue
 
-        print(np.array([np.array(data[k].values)]))
-        print(np.array([np.array(data[k].values)]).shape)
+        x = np.concatenate([x, [d]])
 
-        x_train = np.concatenate([x_train, np.array([np.array(data[k].values)])])
+    return x
+
+
+def __get_train_test():
+    truth, data = __read_data()
+
+    train_truth = truth.sample(frac=0.75)
+    test_truth = pd.concat([train_truth, truth]).drop_duplicates(keep=False).reset_index()
+    train_truth = train_truth.reset_index()
+
+    max_len = max([d.shape[0] for d in data.values()])
+
+    y_train = np.array(train_truth.good)
+    x_train = __create_x_array(data, train_truth.path, max_len)
 
     y_test = np.array(test_truth.good)
-    x_test = np.array([[].extend(data[k].values.tolist()) for k in test_truth.path])
-
-    # print(x_train)
-    print(x_train.shape)
+    x_test = __create_x_array(data, test_truth.path, max_len)
 
     idx = np.random.permutation(len(x_train))
 
     x_train = x_train[idx]
     y_train = y_train[idx]
 
-    y_train[y_train == -1] = 0
-    y_test[y_test == -1] = 0
+    unique, counts = np.unique(y_train, return_counts=True)
+    print(dict(zip(unique, counts)))
+    unique, counts = np.unique(y_test, return_counts=True)
+    print(dict(zip(unique, counts)))
+
+    return x_train, y_train, x_test, y_test
+
+
+def train():
+
+    num_classes = 2
+
+    x_train, y_train, x_test, y_test = __get_train_test()
 
     def make_model(input_shape):
 
@@ -97,3 +112,49 @@ def go():
 
     model = make_model(input_shape=x_train.shape[1:])
     keras.utils.plot_model(model, show_shapes=True)
+
+    epochs = 500
+    batch_size = 32
+
+    callbacks = [
+        keras.callbacks.ModelCheckpoint(
+            "best_model.h5", save_best_only=True, monitor="val_loss"
+        ),
+        keras.callbacks.ReduceLROnPlateau(
+            monitor="val_loss", factor=0.5, patience=20, min_lr=0.0001
+        ),
+        keras.callbacks.EarlyStopping(monitor="val_loss", patience=50, verbose=1),
+    ]
+    model.compile(
+        optimizer="adam",
+        loss="sparse_categorical_crossentropy",
+        metrics=["sparse_categorical_accuracy"],
+    )
+
+    history = model.fit(
+        x_train,
+        y_train,
+        batch_size=batch_size,
+        epochs=epochs,
+        callbacks=callbacks,
+        validation_split=0.2,
+        verbose=1,
+    )
+
+    model = keras.models.load_model("best_model.h5")
+
+    test_loss, test_acc = model.evaluate(x_test, y_test)
+
+    print("Test accuracy", test_acc)
+    print("Test loss", test_loss)
+
+    metric = "sparse_categorical_accuracy"
+    plt.figure()
+    plt.plot(history.history[metric])
+    plt.plot(history.history["val_" + metric])
+    plt.title("model " + metric)
+    plt.ylabel(metric, fontsize="large")
+    plt.xlabel("epoch", fontsize="large")
+    plt.legend(["train", "val"], loc="best")
+    plt.show()
+    plt.close()
