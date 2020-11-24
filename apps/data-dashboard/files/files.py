@@ -33,7 +33,7 @@ def __get_file_metrics_from_commit(commit_id, path_in_commit, newer_changes):
 
         if file['path'] in newer_paths:
 
-            # print('fixed it')
+            print('fixed it {}'.format(commit['date']))
 
             return file['measures']
 
@@ -109,7 +109,9 @@ def get_graphs_per_metric(files):
         else:
             metrics = metrics.append(metric)
 
-    relevant_metrics = [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX, Metric.CHURN]
+    relevant_metrics = [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX, Metric.CHURN,
+                        Metric.COMMENT_LINES, Metric.COMMENT_LINES_DENSITY,
+                        Metric.COMPLEXITY, Metric.SQALE_DEBT_RATIO, Metric.STATEMENTS]
 
     for key in relevant_metrics:
 
