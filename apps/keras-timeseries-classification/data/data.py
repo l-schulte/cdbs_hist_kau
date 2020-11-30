@@ -2,12 +2,11 @@ import pandas as pd
 import pymongo
 import csv
 import progressbar
-import json
 
 from data import db_commits, db_files
 
 
-def __get_file_metrics_from_commit(commit_id, path_in_commit, newer_changes):
+def __get_file_metrics_from_commit(commit_id, newer_changes):
 
     commit = db_commits.find_one({'commit_id': commit_id})
 
@@ -22,12 +21,6 @@ def __get_file_metrics_from_commit(commit_id, path_in_commit, newer_changes):
     if commit is None or commit['sonarqube']['status'] == 'Error':
         print(commit_id)
         return None
-
-    for file in commit['sonarqube']['files']:
-
-        if path_in_commit == file['path']:
-
-            return file['measures']
 
     newer_paths = [change['path'] for change in newer_changes]
 
@@ -57,7 +50,7 @@ def __get_dataframes_for_file(input):
         change = changes[i]
 
         res = __get_file_metrics_from_commit(
-            change['commit_id'], change['path'], file['changes'][i:])
+            change['commit_id'], file['changes'][i:])
 
         if res is None:
             res = []

@@ -1,7 +1,8 @@
-from tensorflow import keras
+from tensorflow import keras, math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sn
 
 from __init__ import Metric
 
@@ -40,6 +41,9 @@ def __create_x_array(data, paths, max_len):
         d = data[k].to_numpy()
         lines_append = max_len - d.shape[0]
         if lines_append > 0:
+
+            # row = np.average(d, axis=0)
+            # rows = np.array([row for _ in range(lines_append)])
             zeros = np.array([np.zeros(d[0].shape) for _ in range(lines_append)])
             d = np.append(d, zeros, 0)
 
@@ -52,10 +56,10 @@ def __create_x_array(data, paths, max_len):
     return x
 
 
-def __get_train_test():
+def get_train_test(frac=0.75, shuffle=True):
     truth, data = __read_data()
 
-    train_truth = truth.sample(frac=0.75)
+    train_truth = truth.sample(frac=frac)
     test_truth = pd.concat([train_truth, truth]).drop_duplicates(keep=False).reset_index()
     train_truth = train_truth.reset_index()
 
@@ -67,10 +71,11 @@ def __get_train_test():
     y_test = np.array(test_truth.good)
     x_test = __create_x_array(data, test_truth.path, max_len)
 
-    idx = np.random.permutation(len(x_train))
+    if shuffle:
+        idx = np.random.permutation(len(x_train))
 
-    x_train = x_train[idx]
-    y_train = y_train[idx]
+        x_train = x_train[idx]
+        y_train = y_train[idx]
 
     unique, counts = np.unique(y_train, return_counts=True)
     print(dict(zip(unique, counts)))
@@ -80,11 +85,9 @@ def __get_train_test():
     return x_train, y_train, x_test, y_test
 
 
-def train():
+def train(x_train, y_train):
 
     num_classes = 2
-
-    x_train, y_train, x_test, y_test = __get_train_test()
 
     def make_model(input_shape):
 
@@ -118,20 +121,23 @@ def train():
 
     callbacks = [
         keras.callbacks.ModelCheckpoint(
-            "best_model.h5", save_best_only=True, monitor="val_loss"
+            "best_model.h5", save_best_only=False, monitor="val_loss"
         ),
         keras.callbacks.ReduceLROnPlateau(
             monitor="val_loss", factor=0.5, patience=20, min_lr=0.0001
         ),
         keras.callbacks.EarlyStopping(monitor="val_loss", patience=50, verbose=1),
+        keras.callbacks.TensorBoard(
+            log_dir='tensorboard', histogram_freq=0, write_graph=True, write_images=True
+        )
     ]
     model.compile(
         optimizer="adam",
         loss="sparse_categorical_crossentropy",
-        metrics=["sparse_categorical_accuracy"],
+        metrics=["accuracy"],
     )
 
-    history = model.fit(
+    model.fit(
         x_train,
         y_train,
         batch_size=batch_size,
@@ -141,6 +147,9 @@ def train():
         verbose=1,
     )
 
+
+def test(x_test, y_test):
+
     model = keras.models.load_model("best_model.h5")
 
     test_loss, test_acc = model.evaluate(x_test, y_test)
@@ -148,13 +157,24 @@ def train():
     print("Test accuracy", test_acc)
     print("Test loss", test_loss)
 
-    metric = "sparse_categorical_accuracy"
-    plt.figure()
-    plt.plot(history.history[metric])
-    plt.plot(history.history["val_" + metric])
-    plt.title("model " + metric)
-    plt.ylabel(metric, fontsize="large")
-    plt.xlabel("epoch", fontsize="large")
-    plt.legend(["train", "val"], loc="best")
+    predictions = model.predict(x_test)
+    classes = np.argmax(predictions, axis=1)
+
+    confusion = math.confusion_matrix(labels=y_test, predictions=classes, num_classes=2)
+
+    df_cm = pd.DataFrame(confusion.numpy(), range(2), range(2))
+
+    sn.heatmap(df_cm, annot=True)
+    print(df_cm)
     plt.show()
-    plt.close()
+
+    return classes
+
+
+def predict(x_data):
+
+    model = keras.models.load_model("best_model.h5")
+    predictions = model.predict(x_data)
+    classes = np.argmax(predictions, axis=1)
+
+    return classes

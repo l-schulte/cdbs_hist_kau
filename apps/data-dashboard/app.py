@@ -3,7 +3,7 @@ from plotter import plotter
 from files import files
 from importer import importer
 
-# importer.get_success_graph()
+importer.get_success_graph()
 
 f = [
     {'good': True, 'path': 'src/main/java/net/sf/jabref/gui/groups/GroupSelector.java'},
@@ -19,5 +19,5 @@ f = [
 ]
 
 
-# files.get_graphs_per_file(f)
+files.get_graphs_per_file(f)
 files.get_graphs_per_metric(f)

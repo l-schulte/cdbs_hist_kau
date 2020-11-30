@@ -90,7 +90,8 @@ def get_graphs_per_file(files):
 
         metrics = get_dataframes(file)
 
-        relevant_metrics = [m.value for m in [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX]]
+        relevant_metrics = [m.value for m in [Metric.NCLOC, Metric.FUNCTIONS,
+                                              Metric.SQALE_INDEX, Metric.CHURN, Metric.COMMENT_LINES]]
 
         fig = px.line(metrics, x='counter', y=relevant_metrics, title=file['path'])
         fig.show()
@@ -109,9 +110,9 @@ def get_graphs_per_metric(files):
         else:
             metrics = metrics.append(metric)
 
-    relevant_metrics = [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX, Metric.CHURN]
+    relevant_metrics = [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX, Metric.CHURN, Metric.COMMENT_LINES]
 
     for key in relevant_metrics:
 
-        fig = px.line(metrics, x='date', y=key.value, title=key.value, color='good', line_group='path')
+        fig = px.line(metrics, x='counter', y=key.value, title=key.value, color='good', line_group='path')
         fig.show()
