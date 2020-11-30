@@ -39,7 +39,6 @@ def __get_file_metrics_from_commit(commit_id, path_in_commit, newer_changes):
 
 
 def get_dataframes(input):
-
     path = input['path']
 
     print('Generating graph for file: {}'.format(path))
@@ -64,43 +63,43 @@ def get_dataframes(input):
             print('res was none')
             res = []
 
-        res.append({'value': str(float(change['added']) - float(change['removed'])), 'metric': 'churn'})
-        res.append({'value': str(change['date']), 'metric': 'date'})
-        res.append({'value': path, 'metric': 'path'})
-        res.append({'value': input['good'], 'metric': 'good'})
-        res.append({'value': str(i - change_count), 'metric': 'counter'})
-        res.append({'value': change['commit_id'], 'metric': 'commit_id'})
+        res_dict = {}
 
-        columns = [d['metric'] for d in res]
-        data = [d['value'] for d in res]
+        for item in res:
+            res_dict[item['metric']] = item['value']
 
-        df = pd.DataFrame([data], ['{} - {}'.format(change['commit_id'], path)], columns)
+        res_dict['churn'] = str(float(change['added']) - float(change['removed']))
+        res_dict['date'] = str(change['date'])
+        res_dict['path'] = path
+        res_dict['color'] = input['color']
+        res_dict['counter'] = str(i - change_count)
+        res_dict['commit_id'] = change['commit_id']
 
+        df = pd.DataFrame(res_dict, [i - change_count])
         dataframes.append(df)
 
     metrics = pd.concat(dataframes)
-    # metrics = metrics.reindex(sorted(metrics.columns), axis=1)
 
     return metrics
 
 
 def get_graphs_per_file(files):
 
+    relevant_metrics = [m.value for m in [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX]]
+
     for file in files:
 
-        metrics = get_dataframes(file)
+        df = get_dataframes(file)
 
-        relevant_metrics = [m.value for m in [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX]]
-
-        fig = px.line(metrics, x='counter', y=relevant_metrics, title=file['path'])
+        fig = px.line(df, x='counter', y=relevant_metrics, title=file['path'])
         fig.show()
 
 
-def get_graphs_per_metric(files):
+def get_graphs_per_metric(files, draw=True):
 
     metrics = None
 
-    for file in files:
+    for i, file in files.iterrows():
 
         metric = get_dataframes(file)
 
@@ -113,7 +112,10 @@ def get_graphs_per_metric(files):
                         Metric.COMMENT_LINES, Metric.COMMENT_LINES_DENSITY,
                         Metric.COMPLEXITY, Metric.SQALE_DEBT_RATIO, Metric.STATEMENTS]
 
+    if not draw:
+        return metrics
+
     for key in relevant_metrics:
 
-        fig = px.line(metrics, x='date', y=key.value, title=key.value, color='good', line_group='path')
+        fig = px.line(metrics, x='counter', y=key.value, title=key.value, color='path', line_group='path')
         fig.show()
