@@ -4,3 +4,4 @@ pymongo
 re
 pandas
 scipy
+matplotlib

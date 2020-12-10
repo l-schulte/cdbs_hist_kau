@@ -2,6 +2,8 @@ from modules import modules
 from files import files
 from importer import importer
 import pandas as pd
+from clusters import clusters
+from __init__ import Metric
 
 DEG_LIMIT = 5
 
@@ -20,6 +22,14 @@ arch_deg_sources['color'] = 'blue'
 
 files.get_graphs_per_metric(arch_deg_targets)
 files.get_graphs_per_metric(arch_deg_sources)
+
+# metrics = pd.read_csv('metrics.csv', ';')
+# # metrics.to_csv('metrics.csv', sep=';')
+
+# relevant_metrics = [m.value for m in [Metric.FUNCTIONS, Metric.COMPLEXITY, Metric.NCLOC, Metric.DUPLICATED_LINES]]
+
+# data = clusters.get_distinct(metrics, relevant_metrics)
+# clusters.show_cluster(data, 1600, 'distance')
 
 # files.get_graphs_per_file(f)
 # importer.get_success_graph()

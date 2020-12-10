@@ -9,10 +9,9 @@ def __get_file_metrics_from_commit(commit_id, path_in_commit, newer_changes):
 
     commit = db_commits.find_one({'commit_id': commit_id})
 
-    if commit is None\
-            or 'sonarqube' not in commit\
-            or 'status' not in commit['sonarqube']\
-            or commit['sonarqube']['status'] is not True:
+    if commit is not None and ('sonarqube' not in commit
+                               or 'status' not in commit['sonarqube']
+                               or commit['sonarqube']['status'] is not True):
 
         commit = db_commits.find_one({'date': {'$gte': commit['date']}, 'sonarqube.status': True}, sort=[
                                      ('date', pymongo.ASCENDING)])
@@ -57,7 +56,8 @@ def get_dataframes(input):
 
         change = changes[i]
 
-        res = __get_file_metrics_from_commit(change['commit_id'], change['path'], file['changes'][i:])
+        if change is not None:
+            res = __get_file_metrics_from_commit(change['commit_id'], change['path'], file['changes'][i:])
 
         if res is None:
             print('res was none')
@@ -71,7 +71,7 @@ def get_dataframes(input):
         res_dict['churn'] = str(float(change['added']) - float(change['removed']))
         res_dict['date'] = str(change['date'])
         res_dict['path'] = path
-        res_dict['color'] = input['color']
+        # res_dict['color'] = input['color']
         res_dict['counter'] = str(i - change_count)
         res_dict['commit_id'] = change['commit_id']
 
