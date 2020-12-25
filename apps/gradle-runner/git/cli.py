@@ -19,6 +19,9 @@ class GitCli:
         self.clone()
 
     def clone(self):
+        """Clone the repository this instance is assigned to.
+
+        """
 
         os.chdir('repos')
 
@@ -28,6 +31,9 @@ class GitCli:
         os.chdir(workdir)
 
     def checkout(self, commit_id):
+        """Checkout a specific commit of the repository this instance is assigned to.
+
+        """
 
         os.chdir('repos/{}'.format(self.repo['title']))
 
@@ -41,6 +47,9 @@ class GitCli:
         return b2s(res.stdout)
 
     def pull(self):
+        """Pull all branches from the repository this instance is assigned to.
+
+        """
 
         os.chdir('repos/{}'.format(self.repo['title']))
 
