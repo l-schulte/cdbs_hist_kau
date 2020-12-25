@@ -2,12 +2,8 @@ import os
 import subprocess
 import datetime
 
-from __init__ import db_log
+from __init__ import db_log, b2s
 from git import workdir
-
-
-def b2s(byte):
-    return '' if not byte else byte.decode("utf-8", 'ignore')
 
 
 class GitCli:
@@ -16,6 +12,9 @@ class GitCli:
         self.repo = repo
 
     def clone(self):
+        """Clone the repository this instance is assigned to.
+
+        """
 
         os.chdir('repos')
 
@@ -33,6 +32,9 @@ class GitCli:
         os.chdir(workdir)
 
     def checkout(self, commit_id):
+        """Checkout a specific commit of the repository this instance is assigned to.
+
+        """
 
         os.chdir('repos/{}'.format(self.repo['title']))
 
@@ -44,6 +46,9 @@ class GitCli:
         return res
 
     def pull(self):
+        """Pull all branches from the repository this instance is assigned to.
+
+        """
 
         os.chdir('repos/{}'.format(self.repo['title']))
 
@@ -61,6 +66,9 @@ class GitCli:
         os.chdir(workdir)
 
     def log(self):
+        """Return the logs of the repository.
+
+        """
 
         os.chdir('repos/{}'.format(self.repo['title']))
 
@@ -73,6 +81,9 @@ class GitCli:
         return b2s(res.stdout).splitlines()
 
     def show(self, commit_id, path):
+        """Return the contents of a version of a file as a string.
+
+        """
 
         os.chdir('repos/{}'.format(self.repo['title']))
 

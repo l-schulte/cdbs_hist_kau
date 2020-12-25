@@ -4,10 +4,6 @@ import requests
 from sonarqube import gradle_runner_basename
 
 
-def b2s(byte):
-    return '' if not byte else byte.decode("utf-8")
-
-
 class GradleRunner:
 
     __lock = None
@@ -22,12 +18,18 @@ class GradleRunner:
         self.__sem_lock(False)
 
     def __sem_lock(self, b):
+        """Set the lock of the semaphore of this gradle runner.
+
+        """
         if b:
             self.__lock.acquire()
         else:
             self.__lock.release()
 
     def lock_runner(self):
+        """Lock this runner from being used by another process.
+
+        """
 
         self.__sem_lock(True)
 
@@ -40,6 +42,12 @@ class GradleRunner:
         return runner
 
     def get_runners(self):
+        """Get runners available on the network.
+
+        Uses dockers named instances to access the /check endpoint of possible runner names
+        to check if they are up and available for use.
+
+        """
 
         print('Looking for runners...')
 
@@ -59,6 +67,9 @@ class GradleRunner:
         return runners
 
     def unlock_runner(self, runner):
+        """Unlock this runner, allowing it to be used by another process.
+
+        """
 
         self.__sem_lock(True)
 
