@@ -4,6 +4,10 @@ from cloc.cli import ClocCli
 
 
 def analyze_file(path, content):
+    """Run a CLOC analysis on a file, return filtered data as JSON.
+
+    """
+
     cli = ClocCli()
 
     name = path.rsplit('/', 1)[-1]

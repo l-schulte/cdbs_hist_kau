@@ -5,6 +5,9 @@ import progressbar
 
 
 def log(log):
+    """Read a git log and return all commits and changes.
+
+    """
 
     commits = []
     changes = []
@@ -27,6 +30,10 @@ def log(log):
 
 
 def __interpret_commit(lines):
+    """Extract data from a commit line using regex.
+
+    """
+
     id = re.search(r'^commit (.+)', lines[0]).group(1)
 
     if id is None:
@@ -64,6 +71,9 @@ def __interpret_commit(lines):
 
 
 def __interpret_changes(lines, commit_id, date):
+    """Extract data from change lines using regex.
+
+    """
 
     changes = []
 

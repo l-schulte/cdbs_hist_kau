@@ -10,6 +10,11 @@ token = api.get_token()
 
 
 def start_analysis(commit, runner, repo):
+    """Triggers an analysis (commit, repo) on a given gradle runner.
+
+    Returns a http result and the start time of the analysis.
+
+    """
 
     key = api.get_project_key(runner)
 
@@ -21,6 +26,11 @@ def start_analysis(commit, runner, repo):
 
 
 def read_analysis(start_time, runner):
+    """Waits for analysis results of a running analysis matching the given start time.
+
+    Returns analysis results as JSON
+
+    """
 
     key = api.get_project_key(runner)
 
@@ -45,5 +55,8 @@ def read_analysis(start_time, runner):
 
 
 def get_runner():
+    """Waits for a free gradle runner by locking a semaphore.
+
+    """
 
     return gradle.lock_runner()

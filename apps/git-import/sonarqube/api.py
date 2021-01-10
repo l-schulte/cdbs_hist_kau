@@ -15,6 +15,9 @@ class SonarqubeApi:
         self.auth = HTTPBasicAuth(login, password)
 
     def get_token(self):
+        """Generates a new API token for the sonarqube instance.
+
+        """
 
         url = sonarqube_instance + '/api/user_tokens/generate' + \
             '?name=cdbs{}'.format(time.time())
@@ -38,6 +41,9 @@ class SonarqubeApi:
         res.raise_for_status()
 
     def check_status(self, key, start_time):
+        """Check if the sonarqube instance if booted and ready.
+
+        """
 
         url_search = sonarqube_instance + '/api/projects/search'
 
@@ -59,6 +65,9 @@ class SonarqubeApi:
         return False
 
     def get_analysis_result(self, key):
+        """Returns the newest analysis result from the sonarqube instance.
+
+        """
 
         url = sonarqube_instance + '/api/measures/component_tree'
 
@@ -96,6 +105,9 @@ class SonarqubeApi:
         }
 
     def get_project_key(self, key):
+        """Gets a new project key from sonarqube, effectivly creating a new project.
+
+        """
 
         url_search = sonarqube_instance + '/api/projects/search'
 
@@ -130,6 +142,9 @@ class SonarqubeApi:
         res_search.raise_for_status()
 
     def trigger_analysis(self, runner, commit, repo, project_key, token):
+        """Triggers an analysis on the given gradle runner.
+
+        """
 
         url = 'http://{}:5000/'.format(runner)
         repo['_id'] = ''

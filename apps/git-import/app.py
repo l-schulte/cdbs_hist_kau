@@ -10,6 +10,9 @@ repos = list(db.repos.find())
 
 
 def __store_commits(repo, commits):
+    """Stores commits found in repository.
+
+    """
 
     print('-> commits')
 
@@ -20,6 +23,9 @@ def __store_commits(repo, commits):
 
 
 def __store_changes(repo, changes):
+    """Stores changes found in repository.
+
+    """
 
     print('-> changes')
 
@@ -66,19 +72,14 @@ def __store_changes(repo, changes):
 
 
 def __calculate_metrics(repo):
+    """Initializes (asynchronous) calculation and storage of metrics.
 
-    # for file in db_files.find({'repo': repo['_id']}):
-    #     for id in file['changes']:
-    #         change = file['changes'][id]
-    #         content = git.get_file_content(
-    #             repo, change['commit_id'], change['path'])
-    #         stat = cloc.analyze_file(file['path'], content)
+    Start here when integrating new metric sources.
 
-    #         db_files.update_one({
-    #             '_id': file['_id']
-    #         }, {
-    #             '$set': {'changes.{}.cloc'.format(id): stat}
-    #         })
+    Current metric sources integrated:
+     - SonarQube (via Gradle runner)
+
+    """
 
     for commit in db_commits.find({'repo': repo['_id'], 'sonarqube.status': {'$in': [False, None]}})\
             .sort('date', pymongo.ASCENDING).batch_size(1):
@@ -97,6 +98,11 @@ def __calculate_metrics(repo):
 
 
 def __run_threaded_sonarqube(commit, runner, repo):
+    """Thread handeling sonarqube analysis via gradle runner.
+
+    Starts analysis on free runner and waits for results, writing them into the database.
+
+    """
 
     request, response = sonarqube.start_analysis(commit, runner, repo)
 
@@ -115,15 +121,20 @@ def __run_threaded_sonarqube(commit, runner, repo):
 
 
 def go():
+    """Go trough import steps: crawling, saving, calculating
+
+    Steps can be skipped by out-commenting the corresponding lines here.
+
+    """
 
     for repo in repos:
 
-        # print('Crawling...')
-        # commits, changes = git.crawl(repo)
+        print('Crawling...')
+        commits, changes = git.crawl(repo)
 
-        # print('Saving...')
-        # __store_commits(repo, commits)
-        # __store_changes(repo, changes)
+        print('Saving...')
+        __store_commits(repo, commits)
+        __store_changes(repo, changes)
 
         print('Calculating...')
         __calculate_metrics(repo)

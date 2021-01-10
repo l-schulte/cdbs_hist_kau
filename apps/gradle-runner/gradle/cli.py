@@ -12,6 +12,12 @@ def b2s(byte):
 class GradleCli:
 
     def __add_sonarqube_to_gradle(self):
+        """Add sonarqube dependency to build file.
+
+        Adds the sonarqube dependency, either through gradle's DSL language or through the legacy plugin system.
+
+        """
+
         build_file = open("build.gradle", "r")
         content = build_file.read()
         build_file.close()
@@ -42,6 +48,11 @@ class GradleCli:
             build_file.close()
 
     def __gradle_download_https(self):
+        """Replace http with https.
+
+        Fix for gradle using http in older versions of the properties causing certificate errors.
+
+        """
         path = "gradle/wrapper/gradle-wrapper.properties"
 
         if not os.path.isfile(path):
@@ -62,6 +73,11 @@ class GradleCli:
         self.__gradle_download_https()
 
     def analyze(self, repo, project_key, token):
+        """Run a gradle build with sonarqube task.
+
+        This requires a previous integration of the sonarqube plugin dependency.
+
+        """
 
         os.chdir('repos/{}'.format(repo['title']))
 

@@ -30,4 +30,7 @@ metric_keys = ', '.join(__metric_keys)
 
 
 def print_runner(runner, message):
+    """Print function for with debugging multiple runners.
+
+    """
     print(' {} > {}'.format(runner, message))
