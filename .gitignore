@@ -1,6 +1,7 @@
 **/repos/**
 **/.vscode
 **/~$**
+**/graphs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

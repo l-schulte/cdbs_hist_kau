@@ -71,7 +71,7 @@ def get_dataframes(input):
         res_dict['churn'] = str(float(change['added']) - float(change['removed']))
         res_dict['date'] = str(change['date'])
         res_dict['path'] = path
-        # res_dict['color'] = input['color']
+        res_dict['legend'] = input['legend']
         res_dict['counter'] = str(i - change_count)
         res_dict['commit_id'] = change['commit_id']
 
@@ -95,7 +95,7 @@ def get_graphs_per_file(files):
         fig.show()
 
 
-def get_graphs_per_metric(files, draw=True):
+def get_graphs_per_metric(files, draw=True, category='', legend='path'):
 
     metrics = None
 
@@ -108,14 +108,18 @@ def get_graphs_per_metric(files, draw=True):
         else:
             metrics = metrics.append(metric)
 
-    relevant_metrics = [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX, Metric.CHURN,
-                        Metric.COMMENT_LINES, Metric.COMMENT_LINES_DENSITY,
-                        Metric.COMPLEXITY, Metric.SQALE_DEBT_RATIO, Metric.STATEMENTS]
+    # relevant_metrics = [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX, Metric.CHURN,
+    #                     Metric.COMMENT_LINES, Metric.COMMENT_LINES_DENSITY,
+    #                     Metric.COMPLEXITY, Metric.SQALE_DEBT_RATIO, Metric.STATEMENTS]
+    relevant_metrics = [Metric.CHURN]
 
     if not draw:
         return metrics
 
+    print(metrics.keys())
+
     for key in relevant_metrics:
 
-        fig = px.line(metrics, x='counter', y=key.value, title=key.value, color='path', line_group='path')
+        fig = px.line(metrics, x='counter', y=key.value, title=key.value, color=legend, line_group='path')
         fig.show()
+        fig.write_html('graphs/{}_{}.html'.format(key.value, category))
