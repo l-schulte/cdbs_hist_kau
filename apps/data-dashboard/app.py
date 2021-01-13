@@ -52,7 +52,7 @@ def make_clusters():
                                           Metric.COMMENT_LINES, Metric.COMMENT_LINES_DENSITY,
                                           Metric.COMPLEXITY, Metric.SQALE_DEBT_RATIO, Metric.STATEMENTS]]
 
-    method = 'msd'
+    method = 'msc'
 
     data = clusters.get_distinct(metrics, relevant_metrics, method)
 
