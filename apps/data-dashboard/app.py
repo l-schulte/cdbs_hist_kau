@@ -1,3 +1,4 @@
+from matplotlib.pyplot import disconnect
 from modules import modules
 from files import files
 from importer import importer
@@ -12,7 +13,7 @@ DEG_LIMIT = 5
 
 def graphs_source_target():
 
-    df = pd.read_csv('source-target-total.csv', ';')
+    df = pd.read_csv('data/source-target-total.csv', ';')
 
     arch_deg_targets = df[df['source'] <= DEG_LIMIT].sort_values('source', ascending=False)
     arch_deg_targets = arch_deg_targets[arch_deg_targets['target'] > DEG_LIMIT]
@@ -25,7 +26,7 @@ def graphs_source_target():
 
 
 def graphs_good_bad():
-    df = pd.read_csv('source-target-total.csv', ';')
+    df = pd.read_csv('data/source-target-total.csv', ';')
 
     count = 30
 
@@ -42,15 +43,33 @@ def graphs_good_bad():
     files.get_graphs_per_metric(df, category='good_bad', legend='legend')
 
 
-graphs_good_bad()
+def make_clusters():
 
-# metrics = pd.read_csv('metrics.csv', ';')
-# # metrics.to_csv('metrics.csv', sep=';')
+    metrics = pd.read_csv('data/metrics.csv', ';')
+    # metrics.to_csv('data/metrics.csv', sep=';')
 
-# relevant_metrics = [m.value for m in [Metric.FUNCTIONS, Metric.COMPLEXITY, Metric.NCLOC, Metric.DUPLICATED_LINES]]
+    relevant_metrics = [m.value for m in [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX, Metric.CHURN,
+                                          Metric.COMMENT_LINES, Metric.COMMENT_LINES_DENSITY,
+                                          Metric.COMPLEXITY, Metric.SQALE_DEBT_RATIO, Metric.STATEMENTS]]
 
-# data = clusters.get_distinct(metrics, relevant_metrics)
-# clusters.show_cluster(data, 1600, 'distance')
+    method = 'msd'
 
-# files.get_graphs_per_file(f)
-# importer.get_success_graph()
+    data = clusters.get_distinct(metrics, relevant_metrics, method)
+
+    print(data)
+
+    threshold = 0
+    criterion = 'none'
+
+    data = data.transpose()
+
+    # cluster = clusters.get_cluster(data, threshold, criterion)
+    cluster = data
+
+    source_target_total = pd.read_csv('data/source-target-total.csv', ';')
+    cluster = cluster.join(source_target_total.set_index('path'))
+
+    cluster.to_csv('tables/{}-{}-{}-{}.csv'.format(method, threshold, criterion, '_'.join(relevant_metrics)), ';')
+
+
+make_clusters()

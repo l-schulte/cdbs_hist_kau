@@ -1,9 +1,6 @@
 from numpy.core.numeric import NaN
 from numpy.lib.function_base import average
 import pandas as pd
-import numpy as np
-from math import ceil
-from scipy.spatial.distance import pdist
 from scipy.cluster.hierarchy import fcluster, ward, dendrogram
 from matplotlib import pyplot as plt
 
@@ -12,6 +9,7 @@ def __msd(r):
     """Mean square displacement
 
     """
+
     mean = average(r)
     n = len(r)
     if n > 0:
@@ -39,7 +37,7 @@ def __msc(r):
     return 0
 
 
-def get_distinct(metrics, relevant_metrics):
+def get_distinct(metrics, relevant_metrics, method):
     """Distinct table of the files metrics
 
     """
@@ -69,8 +67,14 @@ def get_distinct(metrics, relevant_metrics):
     for path in dist_metrics_dict.keys():
         for metric in relevant_metrics:
             val = dist_metrics_dict[path][metric]
-            msd = __msd(val)
-            dist_metrics_dict[path][metric] = msd
+
+            if method == 'msd':
+                val = __msd(val)
+            elif method == 'msc':
+                val = __msc(val)
+            elif method == 'soc':
+                val = __soc(val)
+            dist_metrics_dict[path][metric] = val
 
     relevant_metrics.append('count')
 
@@ -79,12 +83,7 @@ def get_distinct(metrics, relevant_metrics):
     return df
 
 
-def show_cluster(data, threshold, criterion='distance'):
-
-    data = data.transpose()
-
-    print(data.shape)
-    print(data)
+def get_cluster(data, threshold, criterion='distance'):
 
     Z = ward(data)
 
@@ -94,10 +93,4 @@ def show_cluster(data, threshold, criterion='distance'):
 
     data.insert(0, 'cluster', res)
 
-    data.to_csv('clusters.csv', ';')
-
-    # fig = plt.figure(figsize=(25, 10))
-
-    # dn = dendrogram(Z)
-
-    # plt.show()
+    return data
