@@ -86,7 +86,6 @@ def get_distinct(metrics, relevant_metrics, method):
 def get_cluster(data, threshold, criterion='distance'):
 
     Z = ward(data)
-
     res = fcluster(Z, threshold, criterion)
 
     print(res)

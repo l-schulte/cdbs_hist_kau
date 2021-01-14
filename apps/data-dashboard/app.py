@@ -48,9 +48,7 @@ def make_clusters():
     metrics = pd.read_csv('data/metrics.csv', ';')
     # metrics.to_csv('data/metrics.csv', sep=';')
 
-    relevant_metrics = [m.value for m in [Metric.NCLOC, Metric.FUNCTIONS, Metric.SQALE_INDEX, Metric.CHURN,
-                                          Metric.COMMENT_LINES, Metric.COMMENT_LINES_DENSITY,
-                                          Metric.COMPLEXITY, Metric.SQALE_DEBT_RATIO, Metric.STATEMENTS]]
+    relevant_metrics = [m.value for m in [Metric.FUNCTIONS]]
 
     method = 'msc'
 
@@ -58,13 +56,13 @@ def make_clusters():
 
     print(data)
 
-    threshold = 0
-    criterion = 'none'
+    threshold = 80
+    criterion = 'distance'
 
     data = data.transpose()
 
-    # cluster = clusters.get_cluster(data, threshold, criterion)
-    cluster = data
+    cluster = clusters.get_cluster(data, threshold, criterion)
+    # cluster = data
 
     source_target_total = pd.read_csv('data/source-target-total.csv', ';')
     cluster = cluster.join(source_target_total.set_index('path'))
