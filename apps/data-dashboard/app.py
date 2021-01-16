@@ -50,13 +50,13 @@ def make_clusters():
 
     relevant_metrics = [m.value for m in [Metric.FUNCTIONS]]
 
-    method = 'msc'
+    method = 'msd'
 
     data = clusters.get_distinct(metrics, relevant_metrics, method)
 
     print(data)
 
-    threshold = 80
+    threshold = 90
     criterion = 'distance'
 
     data = data.transpose()
