@@ -1,7 +1,0 @@
-numpy
-plotly
-pymongo
-re
-pandas
-scipy
-matplotlib
