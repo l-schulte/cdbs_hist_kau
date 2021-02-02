@@ -12,6 +12,7 @@
 
 1. Clone the master branch of this repository
 2. Start MongoDB Docker instance for initial configuration:
+   - `docker-compose create`
    - `docker-compose start mongodb`
 3. Connect to MongoDB shell in Docker container:
    - `docker exec -it mongodb mongo --username "root" --password "localdontuseglobal"`
