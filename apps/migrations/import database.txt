@@ -1,0 +1,5 @@
+mongoimport --authenticationDatabase admin --username root --password localdontuseglobal --db cdbs_v1 --collection repos --file D:\repos.json
+
+mongoimport --authenticationDatabase admin --username root --password localdontuseglobal --db cdbs_v1 --collection files --file D:\files.json
+
+mongoimport --authenticationDatabase admin --username root --password localdontuseglobal --db cdbs_v1 --collection commits --file D:\commits.json
