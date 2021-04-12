@@ -23,7 +23,7 @@ services:
     command: python -u app.py
 
   sonarqube:
-    image: sonarqube:8-community
+    image: sonarqube:8.5-community
     container_name: sonarqube
     restart: always
     networks:
@@ -34,9 +34,11 @@ services:
   gradle-runner:
     build:
       context: apps/gradle-runner/
-      dockerfile: openjdk8.dockerfile
+      dockerfile: openjdk13.dockerfile
     networks:
       - cdbs_net
+    ports:
+      - 5000:5000
 
 networks:
   cdbs_net:
