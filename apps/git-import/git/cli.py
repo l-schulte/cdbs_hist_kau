@@ -72,7 +72,7 @@ class GitCli:
 
         os.chdir('repos/{}'.format(self.repo['title']))
 
-        command = 'git log --numstat --no-merges --date=unix --after={}'.format(self.repo['end'].date())
+        command = 'git log --numstat --no-merges --date=unix --after={}'.format(self.repo['end'])
         print(command)
         res = subprocess.run(command, capture_output=True, shell=True)
 

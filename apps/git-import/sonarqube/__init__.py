@@ -4,7 +4,7 @@ from __init__ import db
 db_sonarqube = db.sonarqube_dump
 
 sonarqube_instance = 'http://sonarqube:9000'
-gradle_runner_basename = 'cdbs_gradle-runner_{}'
+gradle_runner_basename = 'cdbs_hist_kau_gradle-runner_{}'
 workdir = os.getcwd()
 
 API_USERNAME = 'admin'
