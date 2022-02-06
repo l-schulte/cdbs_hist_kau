@@ -1,5 +1,7 @@
 # Get started
 
+[Project report - PDF](/resources/Research%20Project%20in%20Computer%20Science%20-%20Analyzing%20Dependencies%20between%20Software%20Architectural%20Degradation%20and%20Code%20Complexity%20Trends.pdf)
+
 ## Requirements
 
 - Execution environment requirements:
